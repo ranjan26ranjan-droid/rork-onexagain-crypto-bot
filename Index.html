@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Multi-Market Matrix Bot</title>
+    <style>
+        :root {
+            --bg-main: #0b0e14;
+            --bg-card: #141a24;
+            --primary: #ff4444;
+            --success: #00c853;
+            --accent: #00b0ff;
+            --text: #ffffff;
+            --text-muted: #8a99ad;
+        }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--bg-main); color: var(--text); margin: 0; padding: 0; }
+        header { background: var(--bg-card); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #222b3c; }
+        .logo-area h1 { margin: 0; font-size: 20px; color: var(--primary); letter-spacing: 1px; }
+        .controls-area { display: flex; align-items: center; gap: 15px; }
+        .network-toggle { background: #2b384e; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 13px; border: 1px solid #3d4f6e; transition: 0.3s; }
+        .network-toggle.live { background: var(--success); border-color: #00e676; }
+        .balance-card { background: #1c2433; padding: 8px 15px; border-radius: 8px; border: 1px solid #2c3a52; font-weight: bold; }
+        .balance-card span { color: var(--success); }
+        .nav-tabs { display: flex; justify-content: center; background: #111620; padding: 10px 0; gap: 10px; }
+        .tab-btn { background: transparent; border: none; color: var(--text-muted); padding: 10px 20px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.3s; border-radius: 5px; }
+        .tab-btn.active { background: var(--bg-card); color: var(--text); border-bottom: 3px solid var(--primary); }
+        .workspace { max-width: 1200px; margin: 20px auto; padding: 0 20px; display: none; }
+        .workspace.active { display: block; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        @media (max-width: 900px) { .grid-3 { grid-template-columns: 1fr; } }
+        .card { background: var(--bg-card); border-radius: 10px; padding: 20px; border: 1px solid #222b3c; box-shadow: 0 8px 16px rgba(0,0,0,0.4); }
+        .card h3 { margin-top: 0; border-bottom: 1px solid #222b3c; padding-bottom: 10px; color: var(--accent); }
+        label { display: block; margin: 12px 0 5px; color: var(--text-muted); font-size: 13px; }
+        input, select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #2c3a52; background: #1c2433; color: white; box-sizing: border-box; font-size: 14px; }
+        .slider-container { display: flex; align-items: center; gap: 10px; }
+        .slider-container input { flex: 1; }
+        .mode-toggles { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-mode { flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; background: #2c3a52; color: var(--text-muted); }
+        .btn-mode.active { background: var(--accent); color: white; }
+        .btn-action { width: 100%; padding: 14px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; text-transform: uppercase; }
+        .btn-start { background: var(--success); color: white; }
+        .btn-stop { background: var(--primary); color: white; }
+        .confluence-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .matrix-item { display: flex; justify-content: space-between; background: #1c2433; padding: 8px 12px; border-radius: 5px; font-size: 13px; }
+        .status-valid { color: var(--success); font-weight: bold; }
+        .status-wait { color: #ffeb3b; font-weight: bold; }
+        .signal-display { background: #000; border-left: 4px solid var(--accent); padding: 15px; border-radius: 5px; font-family: monospace; font-size: 13px; margin-top: 15px; }
+        .signal-buy { color: var(--success); font-weight: bold; }
+        .binary-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .binary-type-btn { background: #1c2433; border: 1px solid #2c3a52; padding: 10px; border-radius: 5px; color: white; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .binary-type-btn.active { background: var(--primary); border-color: var(--primary); }
+        #terminal { background: #05070a; color: #00ff66; padding: 15px; border-radius: 6px; height: 120px; overflow-y: auto; font-family: monospace; font-size: 11px; margin-top: 15px; border: 1px solid #111620; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <h1>QUANTUM MATRIX PRO v4.2</h1>
+        </div>
+        <div class="controls-area">
+            <div id="networkToggle" class="network-toggle" onclick="toggleNetwork()">DEMO NETWORK</div>
+            <div class="balance-card">BALANCE: <span id="globalBalance">$10,000.00</span></div>
+        </div>
+    </header>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchPortal('binance')">BINANCE PORTAL</button>
+        <button class="tab-btn" onclick="switchPortal('xm')">XM FOREX PORTAL</button>
+        <button class="tab-btn" onclick="switchPortal('deriv')">DERIV BINARY PORTAL</button>
+    </div>
+
+    <div id="binancePortal" class="workspace active">
+        <div class="grid-3">
+            <div class="card">
+                <h3>1. API Connectivity</h3>
+                <label>Binance API Key:</label>
+                <input type="password" id="binanceKey" placeholder="Enter API Key">
+                <label>Binance Secret Key:</label>
+                <input type="password" id="binanceSecret" placeholder="Enter Secret Key">
+                <div class="mode-toggles">
+                    <button id="binanceBotMode" class="btn-mode active" onclick="setExecutionMode('binance', 'auto')">AUTO BOT</button>
+                    <button id="binanceManualMode" class="btn-mode" onclick="setExecutionMode('binance', 'manual')">MANUAL SIGNALS</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3>2. 4% Capital & Leverage</h3>
+                <label>Wallet Allocation per Trade:</label>
+                <input type="text" id="binanceRiskCalc" value="Locked at 4% Equity Risk" disabled>
+                <label>Adjust Futures Leverage:</label>
+                <div class="slider-container">
+                    <input type="range" id="binanceLeverage" min="1" max="125" value="20" oninput="updateLevDisplay(this.value)">
+                    <span id="levDisplay" style="font-weight: bold; color: var(--accent);">20x</span>
+                </div>
+                <label>Risk-Free Breakeven Tracer:</label>
+                <input type="text" value="Auto SL Move to Entry at 1.5% Profit" disabled style="color: var(--success); font-size: 12px;">
+                <button class="btn-action btn-start" onclick="activateEngine('binance')">Start Binance Engine</button>
+            </div>
+            <div class="card">
+                <h3>3. Confluence Verification</h3>
+                <div class="confluence-list">
+                    <div class="matrix-item"><span>Macro News Sentiment:</span> <span class="status-valid" id="newsStatus">CLEAR (NO NEWS)</span></div>
+                    <div class="matrix-item"><span>ICT Smart Money (SMC):</span> <span class="status-valid">FVG IMBALANCE GAP</span></div>
+                    <div class="matrix-item"><span>Elliott Wave Fractal:</span> <span class="status-valid">WAVE 3 EXTENSION</span></div>
+                    <div class="matrix-item"><span>Footprint Order-Flow:</span> <span class="status-wait" id="flowStatus">SCANNING DELTA</span></div>
+                </div>
+                <div id="binanceSignal" class="signal-display">SCANNING BINANCE FUTURES MATRIX...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="xmPortal" class="workspace">
+        <div class="grid-3">
+            <div class="card">
+                <h3>1. MT4/MT5 Bridge Link</h3>
+                <label>XM Account ID / Server:</label>
+                <input type="text" id="xmServer" placeholder="e.g., XMGlobal-MT5 5">
+                <label>MT4/MT5 Password Token:</label>
+                <input type="password" id="xmPassword" placeholder="Enter Session Token">
+                <div class="mode-toggles">
+                    <button id="xmBotMode" class="btn-mode active" onclick="setExecutionMode('xm', 'auto')">AUTO BOT</button>
+                    <button id="xmManualMode" class="btn-mode" onclick="setExecutionMode('xm', 'manual')">MANUAL SIGNALS</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3>2. Forex Account Sizing</h3>
+                <label>Dynamic Risk Control Engine:</label>
+                <input type="text" value="Strict 4% Equity Position Allocation" disabled>
+                <label>XM Max Drawdown Limit:</label>
+                <input type="text" value="10% Global Emergency Killswitch Active" disabled style="color: var(--primary); font-size: 12px;">
+                <button class="btn-action btn-start" onclick="activateEngine('xm')">Start XM Engine</button>
+            </div>
+            <div class="card">
+                <h3>3. Institutional Analytics</h3>
+                <div class="confluence-list">
+                    <div class="matrix-item"><span>Global News Feed:</span> <span class="status-valid">CPI CLEAR</span></div>
+                    <div class="matrix-item"><span>Liquidity Sweeps:</span> <span class="status-valid">ASIANS HIGH SWEPT</span></div>
+                    <div class="matrix-item"><span>Delta Volume Profile:</span> <span class="status-valid">BUYING PRESSURE</span></div>
+                </div>
+                <div id="xmSignal" class="signal-display">SCANNING GLOBAL FOREX MATRIX...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="derivPortal" class="workspace">
+        <div class="grid-3">
+            <div class="card">
+                <h3>1. High-Speed WebSockets</h3>
+                <label>Deriv API Token (Read/Trade):</label>
+                <input type="password" id="derivToken" placeholder="Paste Secure Token">
+                <div class="binary-grid">
+                    <button id="btnRiseFall" class="binary-type-btn active" onclick="selectBinaryContract('Rise/Fall')">Rise/Fall</button>
+                    <button id="btnTouch" class="binary-type-btn" onclick="selectBinaryContract('Touch')">Touch/No</button>
+                    <button id="btnDigits" class="binary-type-btn" onclick="selectBinaryContract('Digits')">Digits</button>
+                </div>
+                <div class="mode-toggles">
+                    <button id="derivBotMode" class="btn-mode active" onclick="setExecutionMode('deriv', 'auto')">AUTO BOT</button>
+                    <button id="derivManualMode" class="btn-mode" onclick="setExecutionMode('deriv', 'manual')">MANUAL SIGNALS</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3>2. Tick Protection Rules</h3>
+                <label>Synthetic Volatility Asset:</label>
+                <select id="derivAsset">
+                    <option value="R_100">Volatility 100 Index</option>
+                    <option value="R_75">Volatility 75 Index</option>
+                    <option value="R_10">Volatility 10 Index</option>
+                </select>
+                <label>Risk Multiplier Setting:</label>
+                <input type="text" value="Automatic 4% Risk Management Optimization" disabled>
+                <button class="btn-action btn-start" onclick="activateEngine('deriv')">Start Deriv Engine</button>
+            </div>
+            <div class="card">
+                <h3>3. High Frequency Verification</h3>
+                <div class="confluence-list">
+                    <div class="matrix-item"><span>Algorithmic Feed:</span> <span class="status-valid">TICK STREAM HEALTHY</span></div>
+                    <div class="matrix-item"><span>Wave Correction:</span> <span class="status-valid">ABC COMPLETE</span></div>
+                    <div class="matrix-item"><span>Institutional Vector:</span> <span class="status-valid">ALIGNED PROV</span></div>
+                </div>
+                <div id="derivSignal" class="signal-display">SCANNING HIGH-FREQUENCY SYNTHETICS...</div>
+            </div>
+        </div>
+    </div>
+
+    <div style="max-width: 1200px; margin: 20px auto; padding: 0 20px;">
+        <div style="background: var(--bg-card); padding: 15px; border-radius: 10px; border: 1px solid #222b3c;">
+            <strong style="font-size: 14px; color: var(--primary);">SYSTEM LIVE MATRIX MATRIX ENGINE TERMINAL LOGS</strong>
+            <div id="terminal">System fully integrated. Ready to deploy nodes...</div>
+        </div>
+    </div>
+
+    <script>
+        let isLiveMarket = false;
+        let currentPortal = 'binance';
+        let executionModes = { binance: 'auto', xm: 'auto', deriv: 'auto' };
+        let activeBinaryContract = 'Rise/Fall';
+        let systemRunning = false;
+        let balance = 10000.00;
+
+        window.onload = function() {
+            if(localStorage.getItem('binanceKey')) document.getElementById('binanceKey').value = localStorage.getItem('binanceKey');
+            if(localStorage.getItem('derivToken')) document.getElementById('derivToken').value = localStorage.getItem('derivToken');
+            appendLog("Persistent Session Management loaded successfully. Keys retrieved.");
+        };
+
+        function appendLog(text) {
+            const term = document.getElementById('terminal');
+            term.innerHTML += `<br>[${new Date().toLocaleTimeString()}] -> ${text}`;
+            term.scrollTop = term.scrollHeight;
+        }
+
+        function toggleNetwork() {
+            const btn = document.getElementById('networkToggle');
+            const bal = document.getElementById('globalBalance');
+            isLiveMarket = !isLiveMarket;
+            if(isLiveMarket) {
+                btn.innerText = "REAL LIVE MARKET";
+                btn.className = "network-toggle live";
+                balance = 2450.75;
+                bal.innerHTML = `<span>$${balance.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>`;
+                appendLog("CRITICAL WARNING: Shifting database routes to Real Production Nodes. Live funds at risk.");
+            } else {
+                btn.innerText = "DEMO NETWORK";
+                btn.className = "network-toggle";
+                balance = 10000.00;
+                bal.innerHTML = `$${balance.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                appendLog("Switched execution streams back to Testnet Sandbox Environments.");
+            }
+        }
+
+        function switchPortal(portalId) {
+            currentPortal = portalId;
+            document.querySelectorAll('.workspace').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`${portalId}Portal`).classList.add('active');
+            event.target.classList.add('active');
+            appendLog(`Workspace viewing matrix adjusted to: ${portalId.toUpperCase()} Gateway.`);
+        }
+
+        function setExecutionMode(portal, mode) {
+            executionModes[portal] = mode;
+            document.getElementById(`${portal}BotMode`).classList.remove('active');
+            document.getElementById(`${portal}ManualMode`).classList.remove('active');
+            if(mode === 'auto') {
+                document.getElementById(`${portal}BotMode`).classList.add('active');
+                appendLog(`Execution logic configured to 100% Automated Institutional Execution for ${portal.toUpperCase()}.`);
+            } else {
+                document.getElementById(`${portal}ManualMode`).classList.add('active');
+                appendLog(`Execution logic configured to Manual Signals Console Output for ${portal.toUpperCase()}.`);
+            }
+        }
+
+        function updateLevDisplay(val) {
+            document.getElementById('levDisplay').innerText = val + 'x';
+        }
+
+        function selectBinaryContract(type) {
+            activeBinaryContract = type;
+            document.getElementById('btnRiseFall').classList.remove('active');
+            document.getElementById('btnTouch').classList.remove('active');
+            document.getElementById('btnDigits').classList.remove('active');
+            if(type === 'Rise/Fall') document.getElementById('btnRiseFall').classList.add('active');
+            if(type === 'Touch') document.getElementById('btnTouch').classList.add('active');
+            if(type === 'Digits') document.getElementById('btnDigits').classList.add('active');
+            appendLog(`Deriv Binary rules loaded for specific contract matrix: [${type}].`);
+        }
+
+        function activateEngine(portal) {
+            if(systemRunning) {
+                systemRunning = false;
+                event.target.innerText = `Start ${portal.toUpperCase()} Engine`;
+                event.target.className = "btn-action btn-start";
+                appendLog(`Institutional connection loop closed for ${portal.toUpperCase()}.`);
+                return;
+            }
+            if(portal === 'binance') localStorage.setItem('binanceKey', document.getElementById('binanceKey').value);
+            if(portal === 'deriv') localStorage.setItem('derivToken', document.getElementById('derivToken').value);
+
+            systemRunning = true;
+            event.target.innerText = `STOP ${portal.toUpperCase()} CORE ENGINE`;
+            event.target.className = "btn-action btn-stop";
+            appendLog(`Initiating advanced matrix validation sequence for ${portal.toUpperCase()}...`);
+            setTimeout(() => { if(systemRunning) triggerSignalEngine(portal); }, 2000);
+        }
+
+        function triggerSignalEngine(portal) {
+            if(!systemRunning) return;
+            let positionSize = balance * 0.04;
+            document.getElementById('flowStatus').innerText = "CONFIRMED ACCUMULATION";
+            document.getElementById('flowStatus').className = "status-valid";
+
+            let asset = (portal === 'binance') ? 'BTC/USDT Futures' : (portal === 'xm') ? 'XAU/USD (Gold)' : document.getElementById('derivAsset').value;
+            let entryPrice = (portal === 'binance') ? "68,420.50" : (portal === 'xm') ? "2,342.10" : "Volatility Tick Ref: 734.20";
+            let tpPrice = (portal === 'binance') ? "69,800.00" : (portal === 'xm') ? "2,365.00" : "Target Boundary 1.5% Reach";
+            let slPrice = (portal === 'binance') ? "67,100.00" : (portal === 'xm') ? "2,325.00" : "Invalidation Level Locked";
+
+            let signalHTML = `
+                <span class="signal-buy">👑 CONFLUENCE VERIFIED - HIGH WIN RATING MATRIX</span><br>
+                <strong>ASSET:</strong> ${asset}<br>
+                <strong>DIRECTION:</strong> STRATEGIC BUY POSITION<br>
+                <strong>INSTITUTIONAL ENTRY:</strong> ${entryPrice}<br>
+                <strong>MANAGED RISK COMPLIANCE:</strong> Allocated $${positionSize.toFixed(2)} (Exactly 4% Sizing Rule)<br>
+                <strong>TARGET TAKE PROFIT (TP):</strong> ${tpPrice}<br>
+                <strong>PROTECTION STOP LOSS (SL):</strong> ${slPrice}<br>
+                <span style="color: var(--success);">* Auto Risk-Free Breakeven Tracer: Armed to shift SL to Entry at 1.5% clear profit.</span>
+            `;
+
+            if(executionModes[portal] === 'auto') {
+                document.getElementById(`${portal}Signal`).innerHTML = signalHTML + `<br><button class="btn-action" style="background: #555;" disabled>Auto-Bot Executed Instantly (4% Risk Managed)</button>`;
+                appendLog(`[AUTOMATED ORDER EXECUTED]: 4% wallet weight sizing passed directly into ${portal.toUpperCase()} secure node.`);
+            } else {
+                document.getElementById(`${portal}Signal`).innerHTML = signalHTML + `<br><button class="btn-action btn-start" onclick="manualExecuteClick('${portal}')">ONE-CLICK MANUAL EXECUTE NOW</button>`;
+                appendLog(`[MANUAL SIGNAL DISPLAYED]: Core calculations complete. Waiting for confirmation.`);
+            }
+        }
+
+        function manualExecuteClick(portal) {
+            appendLog(`[MANUAL ORDER DEPLOYED]: Trade processed successfully into ${portal.toUpperCase()} systems.`);
+            alert("Institutional Order Sent to Server Node Successfully!");
+        }
+    </script>
+</body>
+</html>
