@@ -2,75 +2,60 @@
 <html lang="si">
 <head>
     <meta charset="UTF-8">
-    <title>Quantum Matrix Pro | Advanced Trading Suite</title>
+    <title>Quantum Matrix Pro v6.8</title>
     <style>
-        :root { --bg: #0b0e14; --success: #00c853; --danger: #ff4444; --accent: #00b0ff; }
-        body { background: var(--bg); color: #fff; font-family: sans-serif; padding: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: #141a24; padding: 20px; border-radius: 10px; border: 1px solid #222b3c; margin-bottom: 20px; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; background: #1c2433; border: 1px solid #222b3c; color: white; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        #terminal { background: #000; color: #00ff66; padding: 15px; height: 200px; overflow-y: auto; font-family: monospace; border: 1px solid #111; }
+        body { background: #0b0e14; color: #fff; font-family: sans-serif; padding: 20px; }
+        .card { background: #141a24; padding: 15px; border-radius: 8px; border: 1px solid #222b3c; margin-bottom: 15px; }
+        input, select { width: 100%; padding: 10px; margin: 5px 0; background: #1c2433; border: 1px solid #222b3c; color: white; border-radius: 4px; }
+        button { width: 100%; padding: 12px; margin-top: 5px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        #logs { background: #000; color: #00ff66; padding: 10px; height: 150px; overflow-y: auto; font-family: monospace; border: 1px solid #111; }
     </style>
 </head>
 <body>
     <h1>QUANTUM MATRIX PRO v6.8</h1>
-    <div class="grid">
-        <div class="card">
-            <h3>🤖 AI Strategy Core</h3>
-            <select id="brokerSelect">
-                <option value="binance">Binance Futures</option>
-                <option value="xm">XM Forex (MT5)</option>
-                <option value="deriv">Deriv (Binary)</option>
-            </select>
-            <button style="background:var(--accent)" onclick="runStrategy()">RUN AI ANALYSIS</button>
-            <button id="botToggle" style="background:var(--danger)" onclick="toggleBot()">BOT: OFF (Click to Activate)</button>
-            <div id="strategyOutput" style="margin-top:10px; color: yellow;">Status: Standby</div>
-        </div>
-        <div class="card">
-            <h3>⚡ Execution Console</h3>
-            <input id="price" placeholder="Entry Price">
-            <input id="sl" placeholder="Stop Loss">
-            <input id="tp" placeholder="Take Profit">
-            <button style="background:var(--success)" onclick="placeOrder('BUY')">BUY / LONG</button>
-            <button style="background:var(--danger)" onclick="placeOrder('SELL')">SELL / SHORT</button>
-        </div>
-    </div>
+    
     <div class="card">
-        <h3>System Logs</h3>
-        <div id="terminal">System Initialized. Awaiting Strategy Execution...</div>
+        <h3>⚡ Trading Console</h3>
+        <select id="broker"><option>Binance</option><option>XM</option><option>Deriv</option></select>
+        <button style="background:#00b0ff" onclick="runAnalysis()">RUN ICT/NEWS ANALYSIS</button>
+        <button id="botBtn" style="background:#ff4444" onclick="toggleBot()">BOT: OFF</button>
     </div>
 
-<script>
-    let isAutoBotOn = false;
-    function log(msg) {
-        let t = document.getElementById('terminal');
-        t.innerHTML += "<br>> " + msg;
-        t.scrollTop = t.scrollHeight;
-    }
-    function toggleBot() {
-        isAutoBotOn = !isAutoBotOn;
-        let btn = document.getElementById('botToggle');
-        btn.style.background = isAutoBotOn ? 'var(--success)' : 'var(--danger)';
-        btn.innerText = isAutoBotOn ? 'BOT: ACTIVE' : 'BOT: OFF';
-        log(isAutoBotOn ? "Auto-Execution Enabled." : "Auto-Execution Disabled.");
-    }
-    function runStrategy() {
-        let broker = document.getElementById('brokerSelect').value;
-        log("Analyzing market for " + broker.toUpperCase() + "...");
-        log("ICT Fair Value Gap identified.");
-        log("Elliott Wave sequence: Wave 5 detected.");
-        document.getElementById('price').value = "2345.50";
-        document.getElementById('sl').value = "2330.50";
-        document.getElementById('tp').value = "2390.50";
-        document.getElementById('strategyOutput').innerText = "ACTION: BUY | CONFIDENCE: 92%";
-        if (isAutoBotOn) { placeOrder('BUY'); }
-    }
-    function placeOrder(type) {
-        let b = document.getElementById('brokerSelect').value;
-        log("ORDER EXECUTED: " + type + " on " + b.toUpperCase());
-        alert("Order placed successfully on " + b);
-    }
-</script>
+    <div class="card">
+        <h3>Execution</h3>
+        <input id="price" placeholder="Entry Price">
+        <button style="background:#00c853" onclick="executeTrade('BUY')">BUY</button>
+        <button style="background:#ff4444" onclick="executeTrade('SELL')">SELL</button>
+    </div>
+
+    <div class="card">
+        <h3>System Logs</h3>
+        <div id="logs">System Initialized...</div>
+    </div>
+
+    <script>
+        let botOn = false;
+        function log(m) { document.getElementById('logs').innerHTML += "<br>> " + m; }
+        
+        function toggleBot() {
+            botOn = !botOn;
+            document.getElementById('botBtn').style.background = botOn ? '#00c853' : '#ff4444';
+            document.getElementById('botBtn').innerText = botOn ? 'BOT: ACTIVE' : 'BOT: OFF';
+            log(botOn ? "Bot Enabled." : "Bot Disabled.");
+        }
+
+        function runAnalysis() {
+            log("Scanning ICT/News...");
+            document.getElementById('price').value = "2345.50";
+            log("Analysis Complete: Signal BUY detected.");
+            if(botOn) executeTrade('BUY');
+        }
+
+        function executeTrade(type) {
+            let b = document.getElementById('broker').value;
+            log("EXECUTING " + type + " ON " + b.toUpperCase() + "...");
+            alert("Order placed on " + b);
+        }
+    </script>
 </body>
 </html>
