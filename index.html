@@ -6,21 +6,16 @@
     <style>
         :root { --bg: #0b0e14; --success: #00c853; --danger: #ff4444; --accent: #00b0ff; }
         body { background: var(--bg); color: #fff; font-family: sans-serif; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .card { background: #141a24; padding: 20px; border-radius: 10px; border: 1px solid #222b3c; margin-bottom: 20px; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; background: #1c2433; border: 1px solid #2c3a52; color: white; border-radius: 5px; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; background: #1c2433; border: 1px solid #222b3c; color: white; border-radius: 5px; box-sizing: border-box; }
         button { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
         #terminal { background: #000; color: #00ff66; padding: 15px; height: 200px; overflow-y: auto; font-family: monospace; border: 1px solid #111; }
     </style>
 </head>
 <body>
-
-<div class="container">
     <h1>QUANTUM MATRIX PRO v6.8</h1>
-    
     <div class="grid">
-        <!-- AI Analysis & Auto Bot Control -->
         <div class="card">
             <h3>🤖 AI Strategy Core</h3>
             <select id="brokerSelect">
@@ -29,11 +24,9 @@
                 <option value="deriv">Deriv (Binary)</option>
             </select>
             <button style="background:var(--accent)" onclick="runStrategy()">RUN AI ANALYSIS</button>
-            <div id="botToggle" style="background:var(--danger); padding:10px; margin-top:10px; text-align:center; cursor:pointer;" onclick="toggleBot()">BOT: OFF (Click to Activate)</div>
+            <button id="botToggle" style="background:var(--danger)" onclick="toggleBot()">BOT: OFF (Click to Activate)</button>
             <div id="strategyOutput" style="margin-top:10px; color: yellow;">Status: Standby</div>
         </div>
-
-        <!-- Manual Execution -->
         <div class="card">
             <h3>⚡ Execution Console</h3>
             <input id="price" placeholder="Entry Price">
@@ -43,21 +36,18 @@
             <button style="background:var(--danger)" onclick="placeOrder('SELL')">SELL / SHORT</button>
         </div>
     </div>
-
     <div class="card">
         <h3>System Logs</h3>
         <div id="terminal">System Initialized. Awaiting Strategy Execution...</div>
     </div>
-</div>
 
 <script>
     let isAutoBotOn = false;
-
     function log(msg) {
-        document.getElementById('terminal').innerHTML += `<br>> ${msg}`;
-        document.getElementById('terminal').scrollTop = document.getElementById('terminal').scrollHeight;
+        let t = document.getElementById('terminal');
+        t.innerHTML += "<br>> " + msg;
+        t.scrollTop = t.scrollHeight;
     }
-
     function toggleBot() {
         isAutoBotOn = !isAutoBotOn;
         let btn = document.getElementById('botToggle');
@@ -65,92 +55,22 @@
         btn.innerText = isAutoBotOn ? 'BOT: ACTIVE' : 'BOT: OFF';
         log(isAutoBotOn ? "Auto-Execution Enabled." : "Auto-Execution Disabled.");
     }
-
     function runStrategy() {
         let broker = document.getElementById('brokerSelect').value;
-        log(`Analyzing market for ${broker.toUpperCase()}...`);
+        log("Analyzing market for " + broker.toUpperCase() + "...");
         log("ICT Fair Value Gap identified.");
         log("Elliott Wave sequence: Wave 5 detected.");
-        log("News feed check: Low impact volatility.");
-        
-        // උදාහරණයක් ලෙස අගයන් සැකසීම
-        let entry = 2345.50;
-        document.getElementById('price').value = entry;
-        document.getElementById('sl').value = (entry - 15.00).toFixed(2);
-        document.getElementById('tp').value = (entry + 45.00).toFixed(2);
-        
-        document.getElementById('strategyOutput').innerText = "ACTION: BUY | CONFIDENCE: 92% | STRATEGY: ICT/Elliott";
-
-        if (isAutoBotOn) {
-            log("Auto-Bot: ICT signal confirmed. Executing...");
-            placeOrder('BUY');
-        }
+        document.getElementById('price').value = "2345.50";
+        document.getElementById('sl').value = "2330.50";
+        document.getElementById('tp').value = "2390.50";
+        document.getElementById('strategyOutput').innerText = "ACTION: BUY | CONFIDENCE: 92%";
+        if (isAutoBotOn) { placeOrder('BUY'); }
     }
-
     function placeOrder(type) {
-        let broker = document.getElementById('brokerSelect').value;
-        let entry = document.getElementById('price').value;
-        log(`ORDER EXECUTED: ${type} @ ${entry} on ${broker.toUpperCase()}.`);
-        alert(`Successfully placed ${type} order on ${broker.toUpperCase()}`);
+        let b = document.getElementById('brokerSelect').value;
+        log("ORDER EXECUTED: " + type + " on " + b.toUpperCase());
+        alert("Order placed successfully on " + b);
     }
 </script>
 </body>
 </html>
-<!DOCTYPE html>
-<html lang="si">
-<head>
-    <meta charset="UTF-8">
-    <title>Quantum Matrix PRO - Execution Center</title>
-    <style>
-        :root { --bg: #0b0e14; --success: #00c853; --danger: #ff4444; }
-        body { background: var(--bg); color: #fff; font-family: sans-serif; padding: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: #141a24; padding: 20px; border-radius: 10px; border: 1px solid #222b3c; }
-        button { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        #terminal { background: #000; color: #00ff66; padding: 15px; height: 200px; overflow-y: auto; font-family: monospace; }
-    </style>
-</head>
-<body>
-    <div class="grid">
-        <div class="card">
-            <h3>🤖 Auto Trading Engine</h3>
-            <select id="broker"><option value="binance">Binance</option><option value="xm">XM</option><option value="deriv">Deriv</option></select>
-            <button onclick="toggleBot()" id="botBtn" style="background:var(--danger)">BOT: OFF</button>
-            <button onclick="runAnalysis()" style="background:#00b0ff">RUN ICT/NEWS ANALYSIS</button>
-        </div>
-        <div class="card">
-            <h3>⚡ Manual Execution</h3>
-            <input id="price" placeholder="Entry Price">
-            <button onclick="placeOrder('BUY')" style="background:var(--success)">BUY</button>
-            <button onclick="placeOrder('SELL')" style="background:var(--danger)">SELL</button>
-        </div>
-    </div>
-    <div class="card"><h3>System Logs</h3><div id="terminal">System Ready...</div></div>
-
-    <script>
-        function log(msg) { document.getElementById('terminal').innerHTML += `<br>> ${msg}`; }
-        function runAnalysis() {
-            log("ICT FVG & Elliott Wave: Trend Bullish.");
-            log("News Feed: CPI Neutral. ATR Sizing: 4%.");
-            document.getElementById('price').value = "2345.50";
-        }
-        function placeOrder(type) {
-            let broker = document.getElementById('broker').value;
-            log(`EXECUTION: ${type} order sent to ${broker} API.`);
-        }
-    </script>
-</body>
-</html># සැබෑ වෙළෙඳාම් කරන Engine එක (Python)
-import ccxt # Binance සඳහා
-# XM සහ Deriv සඳහා අවශ්‍ය ලයිබ්‍රරි අදාළ කරගන්න
-
-def run_trading_bot():
-    print("Bot Starting... Connecting to API...")
-    # ICT සහ News විශ්ලේෂණය මෙහි ලියන්න
-    # උදාහරණයක් ලෙස:
-    # if news_impact == 'LOW' and ict_fvg == 'BULLISH':
-    #     exchange.create_order(...)
-    print("Bot is monitoring market 24/7...")
-
-if __name__ == "__main__":
-    run_trading_bot()
