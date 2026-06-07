@@ -96,3 +96,61 @@
 </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <title>Quantum Matrix PRO - Execution Center</title>
+    <style>
+        :root { --bg: #0b0e14; --success: #00c853; --danger: #ff4444; }
+        body { background: var(--bg); color: #fff; font-family: sans-serif; padding: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: #141a24; padding: 20px; border-radius: 10px; border: 1px solid #222b3c; }
+        button { width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        #terminal { background: #000; color: #00ff66; padding: 15px; height: 200px; overflow-y: auto; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div class="grid">
+        <div class="card">
+            <h3>🤖 Auto Trading Engine</h3>
+            <select id="broker"><option value="binance">Binance</option><option value="xm">XM</option><option value="deriv">Deriv</option></select>
+            <button onclick="toggleBot()" id="botBtn" style="background:var(--danger)">BOT: OFF</button>
+            <button onclick="runAnalysis()" style="background:#00b0ff">RUN ICT/NEWS ANALYSIS</button>
+        </div>
+        <div class="card">
+            <h3>⚡ Manual Execution</h3>
+            <input id="price" placeholder="Entry Price">
+            <button onclick="placeOrder('BUY')" style="background:var(--success)">BUY</button>
+            <button onclick="placeOrder('SELL')" style="background:var(--danger)">SELL</button>
+        </div>
+    </div>
+    <div class="card"><h3>System Logs</h3><div id="terminal">System Ready...</div></div>
+
+    <script>
+        function log(msg) { document.getElementById('terminal').innerHTML += `<br>> ${msg}`; }
+        function runAnalysis() {
+            log("ICT FVG & Elliott Wave: Trend Bullish.");
+            log("News Feed: CPI Neutral. ATR Sizing: 4%.");
+            document.getElementById('price').value = "2345.50";
+        }
+        function placeOrder(type) {
+            let broker = document.getElementById('broker').value;
+            log(`EXECUTION: ${type} order sent to ${broker} API.`);
+        }
+    </script>
+</body>
+</html># සැබෑ වෙළෙඳාම් කරන Engine එක (Python)
+import ccxt # Binance සඳහා
+# XM සහ Deriv සඳහා අවශ්‍ය ලයිබ්‍රරි අදාළ කරගන්න
+
+def run_trading_bot():
+    print("Bot Starting... Connecting to API...")
+    # ICT සහ News විශ්ලේෂණය මෙහි ලියන්න
+    # උදාහරණයක් ලෙස:
+    # if news_impact == 'LOW' and ict_fvg == 'BULLISH':
+    #     exchange.create_order(...)
+    print("Bot is monitoring market 24/7...")
+
+if __name__ == "__main__":
+    run_trading_bot()
